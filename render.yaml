@@ -1,0 +1,60 @@
+services:
+  # Backend Service (Python/FastAPI)
+  - type: web
+    name: classbridge-backend
+    rootDir: backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 120
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        sync: false
+      - key: USE_POSTGRES
+        value: "true"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # ── SMTP (Email) Configuration ──────────────────────────────────────
+      # Set ENABLE_2FA=true only AFTER confirming emails arrive in inbox.
+      # Currently OFF so login works without email dependency.
+      - key: ENABLE_2FA
+        value: "false"
+      - key: SMTP_SERVER
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_EMAIL
+        value: "info@noblenexus-ie.com"
+      # ⚠️  SMTP_PASSWORD must be a Gmail App Password (16 chars, no spaces).
+      # Generate at: https://myaccount.google.com/apppasswords
+      # Keep sync: false for safety—set it manually in Render Dashboard → Environment.
+      - key: SMTP_PASSWORD
+        sync: false
+      # ─────────────────────────────────────────────────────────────────────
+      - key: ALLOW_OTP_CONSOLE_FALLBACK
+        value: "true"
+      - key: VERIFICATION_LINK_BASE
+        value: "https://backend-files-deployment.onrender.com"
+      - key: ADMIN_LOGIN_EMAIL
+        sync: false
+      - key: ADMIN_LOGIN_PASSWORD
+        sync: false
+      - key: RENDER
+        value: "true"
+
+  # Frontend Service (Node/Web)
+  - type: web
+    name: classbridge-frontend
+    rootDir: frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm install serve && npm run build
+    startCommand: npx serve -s . -l $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0
